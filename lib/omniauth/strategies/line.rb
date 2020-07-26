@@ -1,5 +1,4 @@
 require 'omniauth-oauth2'
-require 'json'
 
 module OmniAuth
   module Strategies
@@ -12,6 +11,10 @@ module OmniAuth
         authorize_url: '/oauth2/v2.1/authorize',
         token_url: '/oauth2/v2.1/token'
       }
+
+      def callback_url
+        full_host + script_name + callback_path
+      end
 
       # host changed
       def callback_phase
@@ -31,7 +34,7 @@ module OmniAuth
 
       # Require: Access token with PROFILE permission issued.
       def raw_info
-        @raw_info ||= JSON.load(access_token.get('v2/profile').body)
+        @raw_info ||= access_token.get('v2/profile').parsed || {}
       rescue ::Errno::ETIMEDOUT
         raise ::Timeout::Error
       end
